@@ -1,0 +1,84 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Asset {
+  id            String    @id @default(cuid())
+  fleetId       String    @unique
+  make          String?
+  model         String?
+  hasMicroMon   Boolean   @default(false)
+  status        String
+  outOfUseStart DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  inspections     Inspection[]
+  schedules       Schedule[]
+  documents       Document[]
+  outOfUseCredits OutOfUseCredit[] // <-- add this line
+}
+
+model Schedule {
+  id           String   @id @default(cuid())
+  assetId      String
+  type         String // DAILY_22921 | PERIODIC_22923 | ANNUAL_22927 | AIR_L1_22929 | AIR_L2_22929 | AIR_L3_22929 | RESERVOIR_22931 | QMI_DAILY_33
+  intervalDays Int
+  requiresQMI  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  asset        Asset    @relation(fields: [assetId], references: [id])
+
+  @@index([assetId, type])
+}
+
+model Inspection {
+  id            String   @id @default(cuid())
+  assetId       String
+  scheduleType  String
+  performedAt   DateTime
+  dueBy         DateTime
+  performerId   String
+  performerRole String // QMI | Maintainer | Supervisor
+  result        String // Pass | Defects | OutOfUseCredit
+  form49aPath   String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  asset         Asset    @relation(fields: [assetId], references: [id])
+}
+
+model OutOfUseCredit {
+  id           String    @id @default(cuid())
+  assetId      String
+  startDate    DateTime
+  endDate      DateTime?
+  daysCredited Int       @default(0)
+  attestedBy   String
+  createdAt    DateTime  @default(now())
+  asset        Asset     @relation(fields: [assetId], references: [id])
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  assetId   String
+  path      String
+  kind      String // 49A | WorkOrder | Evidence
+  createdAt DateTime @default(now())
+  asset     Asset    @relation(fields: [assetId], references: [id])
+}
+
+model Audit {
+  id       String   @id @default(cuid())
+  actorId  String
+  action   String
+  entity   String
+  entityId String
+  at       DateTime @default(now())
+  details  Json
+}
