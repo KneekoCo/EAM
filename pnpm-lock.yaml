@@ -268,3 +268,6 @@ snapshots:
   readdirp@4.1.2: {}
 
   tinyexec@1.0.1: {}
+packages:
+  - 'apps/*'
+  - 'packages/*'
