@@ -1,10 +1,14 @@
 {
   "name": "EAM",
+   "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "workspaces": ["apps/*", "packages/*"],
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "scripts": {
+    "dev:api": "pnpm --filter ./apps/api run start:dev",
+    "dev:web": "pnpm --filter ./apps/web run dev"
   },
   "keywords": [],
   "author": "",
