@@ -2,7 +2,6 @@
   "name": "EAM",
    "private": true,
   "packageManager": "pnpm@10.14.0",
-  "workspaces": ["apps/*", "packages/*"],
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
