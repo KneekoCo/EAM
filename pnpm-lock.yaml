@@ -41,6 +41,9 @@ importers:
       nodemailer:
         specifier: ^7.0.5
         version: 7.0.5
+      pdf-lib:
+        specifier: ^1.17.1
+        version: 1.17.1
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
