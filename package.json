@@ -1,11 +1,11 @@
 {
-  "name": "EAM",
-   "private": true,
+  "name": "@eam/db",
+  "private": true,
   "packageManager": "pnpm@10.14.0",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
-    "scripts": {
+  "scripts": {
     "dev:api": "pnpm --filter ./apps/api run start:dev",
     "dev:web": "pnpm --filter ./apps/web run dev"
   },
@@ -15,5 +15,6 @@
   "devDependencies": {
     "prettier": "^3.6.2",
     "prisma": "^6.14.0"
-  }
+  },
+  "type": "module"
 }

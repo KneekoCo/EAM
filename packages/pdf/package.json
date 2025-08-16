@@ -1,0 +1,9 @@
+{
+  "name": "@eam/pdf",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  }
+}
