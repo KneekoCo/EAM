@@ -1,4 +1,5 @@
 {
   "eslint.useFlatConfig": true,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  // remove this if present:
+  // "eslint.experimental.useFlatConfig": true
 }

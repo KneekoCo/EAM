@@ -1,20 +1,16 @@
 ﻿{
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
     "strict": true,
-    "skipLibCheck": true,
     "noEmit": true,
-    "composite": true,
-
-    "jsx": "react-jsx",              // 👈 critical: parse JSX
-    "types": ["vite/client"],
-
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vite/client"]
   },
-  "include": ["src", "vite-env.d.ts"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["src"]
 }

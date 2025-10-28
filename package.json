@@ -1,19 +1,21 @@
 {
-  "name": "eam-monorepo",
+  "name": "eam",
   "private": true,
-  "packageManager": "pnpm@10.14.0",
+  "workspaces": [
+    "apps/*",
+    "eam-ui"
+  ],
   "scripts": {
-    "dev:api": "pnpm --filter ./apps/api run start:dev",
-    "dev:ui": "pnpm --filter ./eam-ui run dev",
-    "build": "pnpm -r -s run build",
-    "dev": "pnpm -r -s run dev"
+    "dev:api": "pnpm --filter @eam/api dev",
+    "dev:ui": "pnpm --filter @eam/ui dev",
+    "dev": "concurrently -k \"pnpm dev:api\" \"pnpm dev:ui\"",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "eslint": "^9.38.0",
-    "@typescript-eslint/parser": "^8.46.2",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^8.57.0",
     "prettier": "^3.6.2"
   }
 }
