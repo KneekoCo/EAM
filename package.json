@@ -1,4 +1,4 @@
 {
-  "name": "eam-monorepo",
-  "private": true
+  "files": [],
+  "references": [{ "path": "./eam-ui" }]
 }

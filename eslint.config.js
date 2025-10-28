@@ -1,43 +1,24 @@
-const path = require("node:path");
-const tsParser = require("@typescript-eslint/parser");
-const tsPlugin = require("@typescript-eslint/eslint-plugin");
+// eslint.config.mjs (snippet for UI)
+import { fileURLToPath } from "node:url";
+import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 
-const ignores = ["**/dist/**", "**/build/**", "**/node_modules/**", "eam-api/**"];
+const uiDir = fileURLToPath(new URL("./eam-ui", import.meta.url));
 
-module.exports = [
-  {
-    files: ["apps/api/**/*.{ts,tsx}"],
-    ignores,
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        tsconfigRootDir: path.resolve(__dirname, "apps/api")
-      }
-    },
-    plugins: { "@typescript-eslint": tsPlugin },
-    rules: {
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/no-explicit-any": "off"
-    }
-  },
+export default [
   {
     files: ["eam-ui/**/*.{ts,tsx}"],
-    ignores,
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        tsconfigRootDir: path.resolve(__dirname, "eam-ui")
+        tsconfigRootDir: uiDir,
+        project: ["./tsconfig.json"],
+        sourceType: "module"
       }
     },
     plugins: { "@typescript-eslint": tsPlugin },
-    rules: {
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/no-explicit-any": "off"
-    }
+    rules: {},
+    ignores: ["eam-ui/dist/**"]
   },
-  { ignores }
+  { ignores: ["**/node_modules/**"] }
 ];
