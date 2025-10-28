@@ -12,9 +12,9 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/react": "^18.3.26",
+    "@types/react-dom": "^18.3.7",
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
-    "@types/react": "^18.2.79",
-    "@types/react-dom": "^18.2.25"
+    "vite": "^7.1.12"
   }
 }
