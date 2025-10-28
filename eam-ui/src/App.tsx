@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-// --- CONFIG ---------------------------------------------------------------
+/* =========================================================================
+   CONFIG
+   ========================================================================= */
 const API_BASE =
   (typeof window !== "undefined" && (window as any).__EAM_API__) ||
   "http://localhost:3001";
 
-// --- TYPES ----------------------------------------------------------------
+/* =========================================================================
+   TYPES
+   ========================================================================= */
 export type Asset = {
   id: string;
   name: string;
@@ -13,7 +17,7 @@ export type Asset = {
   serialNumber: string;
   location: string;
   notes?: string;
-  createdAt: string;
+  createdAt: string; // ISO
 };
 
 export type Inspection = {
@@ -24,26 +28,48 @@ export type Inspection = {
   dueDate: string; // ISO
 };
 
-// --- UI PRIMITIVES (no external libs) ------------------------------------
+/* =========================================================================
+   UI PRIMITIVES (no external libraries)
+   ========================================================================= */
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "ghost";
   size?: "sm" | "md";
 };
-function Button({ className = "", variant = "primary", size = "md", ...rest }: ButtonProps) {
+function Button({
+  className = "",
+  variant = "primary",
+  size = "md",
+  ...rest
+}: ButtonProps) {
   const v =
     variant === "ghost"
       ? "bg-transparent text-neutral-700 hover:bg-neutral-100 border border-neutral-300"
       : "bg-neutral-900 text-white hover:bg-neutral-800 border border-neutral-900";
-  const s = size === "sm" ? "px-3 py-1.5 text-sm rounded-xl" : "px-4 py-2 rounded-2xl";
-  return <button className={`transition inline-flex items-center justify-center ${v} ${s} ${className}`} {...rest} />;
+  const s =
+    size === "sm" ? "px-3 py-1.5 text-sm rounded-xl" : "px-4 py-2 rounded-2xl";
+  return (
+    <button
+      className={`transition inline-flex items-center justify-center ${v} ${s} ${className}`}
+      {...rest}
+    />
+  );
 }
 
 function Card(props: React.HTMLAttributes<HTMLDivElement>) {
   const { className = "", ...rest } = props;
-  return <div className={`bg-white border border-neutral-200 rounded-2xl shadow-sm ${className}`} {...rest} />;
+  return (
+    <div
+      className={`bg-white border border-neutral-200 rounded-2xl shadow-sm ${className}`}
+      {...rest}
+    />
+  );
 }
 function CardHeader(props: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className="px-4 py-3 border-b border-neutral-100 font-semibold">{props.children}</div>;
+  return (
+    <div className="px-4 py-3 border-b border-neutral-100 font-semibold">
+      {props.children}
+    </div>
+  );
 }
 function CardBody(props: React.HTMLAttributes<HTMLDivElement>) {
   return <div className="p-4">{props.children}</div>;
@@ -63,17 +89,23 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { className = "", ...rest } = props;
   return (
     <textarea
-      className={`border border-neutral-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-neutral-200`}
+      className={`border border-neutral-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-neutral-200 ${className}`}
       {...rest}
     />
   );
 }
 
 type SelectOption = { label: string; value: string };
-type SelectProps = { value: string; onChange: (v: string) => void; options: SelectOption[] };
-function Select({ value, onChange, options }: SelectProps) {
+type SelectProps = {
+  value: string;
+  onChange: (v: string) => void;
+  options: SelectOption[];
+  id?: string;
+};
+function Select({ value, onChange, options, id }: SelectProps) {
   return (
     <select
+      id={id}
       className="border border-neutral-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-neutral-200"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -87,7 +119,10 @@ function Select({ value, onChange, options }: SelectProps) {
   );
 }
 
-type BadgeProps = { children: React.ReactNode; tone?: "neutral" | "green" | "red" | "amber" };
+type BadgeProps = {
+  children: React.ReactNode;
+  tone?: "neutral" | "green" | "red" | "amber";
+};
 function Badge({ children, tone = "neutral" }: BadgeProps) {
   const map: Record<string, string> = {
     neutral: "bg-neutral-100 text-neutral-700 border-neutral-200",
@@ -95,18 +130,36 @@ function Badge({ children, tone = "neutral" }: BadgeProps) {
     red: "bg-red-100 text-red-700 border-red-200",
     amber: "bg-amber-100 text-amber-800 border-amber-200",
   };
-  return <span className={`inline-block px-2 py-1 text-xs rounded-full border ${map[tone]}`}>{children}</span>;
+  return (
+    <span className={`inline-block px-2 py-1 text-xs rounded-full border ${map[tone]}`}>
+      {children}
+    </span>
+  );
 }
 
-type ModalProps = { open: boolean; title: string; children: React.ReactNode; onClose: () => void };
+type ModalProps = {
+  open: boolean;
+  title: string;
+  children: React.ReactNode;
+  onClose: () => void;
+};
 function Modal({ open, title, children, onClose }: ModalProps) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-neutral-200">
         <div className="px-5 py-3 border-b flex items-center justify-between">
           <div className="font-semibold">{title}</div>
-          <button onClick={onClose} aria-label="Close" className="text-neutral-500 hover:text-black">
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-neutral-500 hover:text-black"
+          >
             ×
           </button>
         </div>
@@ -116,7 +169,9 @@ function Modal({ open, title, children, onClose }: ModalProps) {
   );
 }
 
-// --- DATA HELPERS ---------------------------------------------------------
+/* =========================================================================
+   DATA HELPERS
+   ========================================================================= */
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -126,9 +181,328 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
-// --- MAIN APP -------------------------------------------------------------
+/* =========================================================================
+   SUBCOMPONENTS
+   ========================================================================= */
+function DashboardSummary({
+  counts,
+  inspectionsOrdered,
+}: {
+  counts: { assets: number; total: number; pass: number; fail: number; pending: number };
+  inspectionsOrdered: Inspection[];
+}) {
+  return (
+    <>
+      <section
+        className="grid"
+        style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}
+      >
+        <Card>
+          <CardHeader>Assets</CardHeader>
+          <CardBody>
+            <div className="text-3xl font-semibold">{counts.assets}</div>
+            <div className="text-sm text-neutral-500">Total assets</div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader>Inspections</CardHeader>
+          <CardBody>
+            <div className="text-3xl font-semibold">{counts.total}</div>
+            <div className="text-sm text-neutral-500">All inspections</div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader>Pass</CardHeader>
+          <CardBody>
+            <div className="text-3xl font-semibold">{counts.pass}</div>
+            <Badge tone="green">Up to date</Badge>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader>Fail/Pending</CardHeader>
+          <CardBody>
+            <div className="text-3xl font-semibold">
+              {counts.fail + counts.pending}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <Badge tone="red">Fail {counts.fail}</Badge>
+              <Badge tone="amber">Pending {counts.pending}</Badge>
+            </div>
+          </CardBody>
+        </Card>
+      </section>
+
+      <Card style={{ marginTop: 16 }}>
+        <CardHeader>Recent inspections (by due date)</CardHeader>
+        <CardBody>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full text-sm" style={{ minWidth: 640 }}>
+              <thead>
+                <tr className="text-left text-neutral-500 border-b">
+                  <th className="py-2 pr-4">ID</th>
+                  <th className="py-2 pr-4">Asset</th>
+                  <th className="py-2 pr-4">Inspector</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2">Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inspectionsOrdered.slice(0, 6).map((i) => (
+                  <tr key={i.id} className="border-b last:border-0">
+                    <td className="py-2 pr-4">{i.id.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{i.assetId.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{i.inspector}</td>
+                    <td className="py-2 pr-4">
+                      {i.status === "PASS" && <Badge tone="green">PASS</Badge>}
+                      {i.status === "FAIL" && <Badge tone="red">FAIL</Badge>}
+                      {i.status === "PENDING" && <Badge tone="amber">PENDING</Badge>}
+                    </td>
+                    <td className="py-2">
+                      {new Date(i.dueDate).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+                {!inspectionsOrdered.length && (
+                  <tr>
+                    <td className="py-4 text-neutral-500" colSpan={5}>
+                      No inspections.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardBody>
+      </Card>
+    </>
+  );
+}
+
+function AssetsTable({
+  assets,
+  query,
+  onQuery,
+}: {
+  assets: Asset[];
+  query: string;
+  onQuery: (v: string) => void;
+}) {
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="sr-only" htmlFor="assetSearch">
+          Search assets
+        </label>
+        <Input
+          id="assetSearch"
+          placeholder="Search assets… (name, type, serial, location)"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+          style={{ minWidth: 260 }}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>Assets</CardHeader>
+        <CardBody>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full text-sm" style={{ minWidth: 760 }}>
+              <thead>
+                <tr className="text-left text-neutral-500 border-b">
+                  <th className="py-2 pr-4">Name</th>
+                  <th className="py-2 pr-4">Type</th>
+                  <th className="py-2 pr-4">Serial</th>
+                  <th className="py-2 pr-4">Location</th>
+                  <th className="py-2">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((a) => (
+                  <tr key={a.id} className="border-b last:border-0">
+                    <td className="py-2 pr-4">{a.name}</td>
+                    <td className="py-2 pr-4">{a.type}</td>
+                    <td className="py-2 pr-4">{a.serialNumber}</td>
+                    <td className="py-2 pr-4">{a.location}</td>
+                    <td className="py-2">
+                      {new Date(a.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+                {!assets.length && (
+                  <tr>
+                    <td className="py-4 text-neutral-500" colSpan={5}>
+                      No assets match your filter.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardBody>
+      </Card>
+    </>
+  );
+}
+
+function InspectionsTable({
+  inspections,
+  statusFilter,
+  onStatusFilter,
+}: {
+  inspections: Inspection[];
+  statusFilter: string;
+  onStatusFilter: (v: string) => void;
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Select
+          id="statusFilter"
+          value={statusFilter}
+          onChange={(v) => onStatusFilter(v)}
+          options={[
+            { label: "All statuses", value: "" },
+            { label: "PASS", value: "PASS" },
+            { label: "FAIL", value: "FAIL" },
+            { label: "PENDING", value: "PENDING" },
+          ]}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>Inspections</CardHeader>
+        <CardBody>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full text-sm" style={{ minWidth: 760 }}>
+              <thead>
+                <tr className="text-left text-neutral-500 border-b">
+                  <th className="py-2 pr-4">ID</th>
+                  <th className="py-2 pr-4">Asset</th>
+                  <th className="py-2 pr-4">Inspector</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2">Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inspections.map((i) => (
+                  <tr key={i.id} className="border-b last:border-0">
+                    <td className="py-2 pr-4">{i.id.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{i.assetId.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{i.inspector}</td>
+                    <td className="py-2 pr-4">
+                      {i.status === "PASS" && <Badge tone="green">PASS</Badge>}
+                      {i.status === "FAIL" && <Badge tone="red">FAIL</Badge>}
+                      {i.status === "PENDING" && <Badge tone="amber">PENDING</Badge>}
+                    </td>
+                    <td className="py-2">
+                      {new Date(i.dueDate).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+                {!inspections.length && (
+                  <tr>
+                    <td className="py-4 text-neutral-500" colSpan={5}>
+                      No inspections.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardBody>
+      </Card>
+    </>
+  );
+}
+
+function AddAssetForm({
+  form,
+  setForm,
+  onSubmit,
+}: {
+  form: { name: string; type: string; serialNumber: string; location: string; notes: string };
+  setForm: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      type: string;
+      serialNumber: string;
+      location: string;
+      notes: string;
+    }>
+  >;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-3">
+      <label>
+        <div className="text-sm mb-1">Name *</div>
+        <Input
+          required
+          value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        />
+      </label>
+      <label>
+        <div className="text-sm mb-1">Type *</div>
+        <Input
+          required
+          value={form.type}
+          onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+        />
+      </label>
+      <label>
+        <div className="text-sm mb-1">Serial Number *</div>
+        <Input
+          required
+          value={form.serialNumber}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, serialNumber: e.target.value }))
+          }
+        />
+      </label>
+      <label>
+        <div className="text-sm mb-1">Location *</div>
+        <Input
+          required
+          value={form.location}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, location: e.target.value }))
+          }
+        />
+      </label>
+      <label>
+        <div className="text-sm mb-1">Notes</div>
+        <Textarea
+          rows={3}
+          value={form.notes}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+        />
+      </label>
+
+      <div className="flex gap-2 mt-2">
+        <Button type="submit">Save</Button>
+        <Button type="reset" variant="ghost" onClick={() => setForm({
+          name: "",
+          type: "",
+          serialNumber: "",
+          location: "",
+          notes: "",
+        })}>
+          Clear
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/* =========================================================================
+   MAIN APP
+   ========================================================================= */
 export default function App() {
-  const [tab, setTab] = useState<"dashboard" | "assets" | "inspections" | "settings">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "assets" | "inspections" | "settings">(
+    "dashboard"
+  );
+
   const [assets, setAssets] = useState<Asset[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [loading, setLoading] = useState(false);
@@ -152,7 +526,10 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const [a, i] = await Promise.all([api<Asset[]>("/assets"), api<Inspection[]>("/inspections")]);
+      const [a, i] = await Promise.all([
+        api<Asset[]>("/assets"),
+        api<Inspection[]>("/inspections"),
+      ]);
       setAssets(a);
       setInspections(i);
     } catch (e: unknown) {
@@ -180,14 +557,21 @@ export default function App() {
     const q = assetQuery.trim().toLowerCase();
     if (!q) return assets;
     return assets.filter((a) =>
-      [a.name, a.type, a.serialNumber, a.location, a.notes || ""].some((f) => f.toLowerCase().includes(q)),
+      [a.name, a.type, a.serialNumber, a.location, a.notes || ""].some((f) =>
+        f.toLowerCase().includes(q)
+      )
     );
   }, [assets, assetQuery]);
 
-  const filteredInspections = useMemo(() => {
-    let list = inspections;
-    if (statusFilter) list = list.filter((i) => i.status === (statusFilter as Inspection["status"]));
-    return list.slice().sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  const inspectionsOrdered = useMemo(() => {
+    let list = inspections.slice();
+    if (statusFilter)
+      list = list.filter(
+        (i) => i.status === (statusFilter as Inspection["status"])
+      );
+    return list.sort(
+      (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    );
   }, [inspections, statusFilter]);
 
   async function addAsset(e: React.FormEvent) {
@@ -222,7 +606,7 @@ export default function App() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       alert(`Create failed: ${msg}`);
-      await loadAll(); // rollback
+      await loadAll(); // rollback refresh
     }
   }
 
@@ -231,33 +615,64 @@ export default function App() {
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="font-semibold">EAM • Polished UI</div>
+          <div className="font-semibold">EAM • UI</div>
           <div className="text-xs text-neutral-500">
             API: <code>{API_BASE}</code>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6" style={{ display: "grid", gridTemplateColumns: "1fr 3fr", gap: 24 }}>
+      <div
+        className="max-w-7xl mx-auto px-4 py-6"
+        style={{ display: "grid", gridTemplateColumns: "1fr 3fr", gap: 24 }}
+      >
         {/* Sidebar */}
         <aside>
           <Card>
             <CardHeader>Navigation</CardHeader>
             <CardBody>
-              <nav className="flex flex-col gap-2">
-                <Button variant={tab === "dashboard" ? "primary" : "ghost"} onClick={() => setTab("dashboard")}>
+              <nav className="flex flex-col gap-2" aria-label="Primary">
+                <Button
+                  aria-current={tab === "dashboard" ? "page" : undefined}
+                  variant={tab === "dashboard" ? "primary" : "ghost"}
+                  onClick={() => setTab("dashboard")}
+                >
                   Dashboard
                 </Button>
-                <Button variant={tab === "assets" ? "primary" : "ghost"} onClick={() => setTab("assets")}>
+                <Button
+                  aria-current={tab === "assets" ? "page" : undefined}
+                  variant={tab === "assets" ? "primary" : "ghost"}
+                  onClick={() => setTab("assets")}
+                >
                   Assets
                 </Button>
-                <Button variant={tab === "inspections" ? "primary" : "ghost"} onClick={() => setTab("inspections")}>
+                <Button
+                  aria-current={tab === "inspections" ? "page" : undefined}
+                  variant={tab === "inspections" ? "primary" : "ghost"}
+                  onClick={() => setTab("inspections")}
+                >
                   Inspections
                 </Button>
-                <Button variant={tab === "settings" ? "primary" : "ghost"} onClick={() => setTab("settings")}>
+                <Button
+                  aria-current={tab === "settings" ? "page" : undefined}
+                  variant={tab === "settings" ? "primary" : "ghost"}
+                  onClick={() => setTab("settings")}
+                >
                   Settings
                 </Button>
               </nav>
+
+              <div className="mt-3 flex gap-2">
+                <Button onClick={() => setShowAdd(true)}>+ Add Asset</Button>
+                <Button variant="ghost" onClick={loadAll}>
+                  Refresh
+                </Button>
+              </div>
+
+              {loading && (
+                <div className="mt-2 text-sm text-neutral-500">Loading…</div>
+              )}
+              {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
             </CardBody>
           </Card>
         </aside>
@@ -265,201 +680,37 @@ export default function App() {
         {/* Main content */}
         <main className="flex flex-col gap-6">
           {tab === "dashboard" && (
-            <section className="grid" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}>
-              <Card>
-                <CardHeader>Assets</CardHeader>
-                <CardBody>
-                  <div className="text-3xl font-semibold">{counts.assets}</div>
-                  <div className="text-sm text-neutral-500">Total assets</div>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardHeader>Inspections</CardHeader>
-                <CardBody>
-                  <div className="text-3xl font-semibold">{counts.total}</div>
-                  <div className="text-sm text-neutral-500">All inspections</div>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardHeader>Pass</CardHeader>
-                <CardBody>
-                  <div className="text-3xl font-semibold">{counts.pass}</div>
-                  <Badge tone="green">Up to date</Badge>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardHeader>Fail/Pending</CardHeader>
-                <CardBody>
-                  <div className="text-3xl font-semibold">{counts.fail + counts.pending}</div>
-                  <div className="flex gap-2 mt-2">
-                    <Badge tone="red">Fail {counts.fail}</Badge>
-                    <Badge tone="amber">Pending {counts.pending}</Badge>
-                  </div>
-                </CardBody>
-              </Card>
-
-              <Card style={{ gridColumn: "1 / -1" }}>
-                <CardHeader>Recent inspections (by due date)</CardHeader>
-                <CardBody>
-                  <div style={{ overflowX: "auto" }}>
-                    <table className="w-full text-sm" style={{ minWidth: 640 }}>
-                      <thead>
-                        <tr className="text-left text-neutral-500 border-b">
-                          <th className="py-2 pr-4">ID</th>
-                          <th className="py-2 pr-4">Asset</th>
-                          <th className="py-2 pr-4">Inspector</th>
-                          <th className="py-2 pr-4">Status</th>
-                          <th className="py-2">Due</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredInspections.slice(0, 6).map((i) => (
-                          <tr key={i.id} className="border-b last:border-0">
-                            <td className="py-2 pr-4">{i.id.slice(0, 8)}…</td>
-                            <td className="py-2 pr-4">{i.assetId.slice(0, 8)}…</td>
-                            <td className="py-2 pr-4">{i.inspector}</td>
-                            <td className="py-2 pr-4">
-                              {i.status === "PASS" && <Badge tone="green">PASS</Badge>}
-                              {i.status === "FAIL" && <Badge tone="red">FAIL</Badge>}
-                              {i.status === "PENDING" && <Badge tone="amber">PENDING</Badge>}
-                            </td>
-                            <td className="py-2">{new Date(i.dueDate).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                        {!filteredInspections.length && (
-                          <tr>
-                            <td className="py-4 text-neutral-500" colSpan={5}>
-                              No inspections.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardBody>
-              </Card>
-            </section>
+            <DashboardSummary
+              counts={counts}
+              inspectionsOrdered={inspectionsOrdered}
+            />
           )}
 
           {tab === "assets" && (
             <section className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  placeholder="Search assets… (name, type, serial, location)"
-                  value={assetQuery}
-                  onChange={(e) => setAssetQuery(e.target.value)}
-                  style={{ minWidth: 260 }}
-                />
-                <Button onClick={() => setShowAdd(true)}>+ Add Asset</Button>
-                <Button variant="ghost" onClick={loadAll}>
-                  Refresh
-                </Button>
-                {loading && <span className="text-sm text-neutral-500">Loading…</span>}
-                {error && <span className="text-sm text-red-600">{error}</span>}
-              </div>
-
-              <Card>
-                <CardHeader>Assets</CardHeader>
-                <CardBody>
-                  <div style={{ overflowX: "auto" }}>
-                    <table className="w-full text-sm" style={{ minWidth: 760 }}>
-                      <thead>
-                        <tr className="text-left text-neutral-500 border-b">
-                          <th className="py-2 pr-4">Name</th>
-                          <th className="py-2 pr-4">Type</th>
-                          <th className="py-2 pr-4">Serial</th>
-                          <th className="py-2 pr-4">Location</th>
-                          <th className="py-2">Created</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredAssets.map((a) => (
-                          <tr key={a.id} className="border-b last:border-0">
-                            <td className="py-2 pr-4">{a.name}</td>
-                            <td className="py-2 pr-4">{a.type}</td>
-                            <td className="py-2 pr-4">{a.serialNumber}</td>
-                            <td className="py-2 pr-4">{a.location}</td>
-                            <td className="py-2">{new Date(a.createdAt).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                        {!filteredAssets.length && (
-                          <tr>
-                            <td className="py-4 text-neutral-500" colSpan={5}>
-                              No assets match your filter.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardBody>
-              </Card>
+              <AssetsTable
+                assets={filteredAssets}
+                query={assetQuery}
+                onQuery={setAssetQuery}
+              />
             </section>
           )}
 
           {tab === "inspections" && (
             <section className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <Select
-                  value={statusFilter}
-                  onChange={(v) => setStatusFilter(v)}
-                  options={[
-                    { label: "All statuses", value: "" },
-                    { label: "PASS", value: "PASS" },
-                    { label: "FAIL", value: "FAIL" },
-                    { label: "PENDING", value: "PENDING" },
-                  ]}
-                />
-                <Button variant="ghost" onClick={loadAll}>
-                  Refresh
-                </Button>
-              </div>
-
-              <Card>
-                <CardHeader>Inspections</CardHeader>
-                <CardBody>
-                  <div style={{ overflowX: "auto" }}>
-                    <table className="w-full text-sm" style={{ minWidth: 760 }}>
-                      <thead>
-                        <tr className="text-left text-neutral-500 border-b">
-                          <th className="py-2 pr-4">ID</th>
-                          <th className="py-2 pr-4">Asset</th>
-                          <th className="py-2 pr-4">Inspector</th>
-                          <th className="py-2 pr-4">Status</th>
-                          <th className="py-2">Due</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredInspections.map((i) => (
-                          <tr key={i.id} className="border-b last:border-0">
-                            <td className="py-2 pr-4">{i.id.slice(0, 8)}…</td>
-                            <td className="py-2 pr-4">{i.assetId.slice(0, 8)}…</td>
-                            <td className="py-2 pr-4">{i.inspector}</td>
-                            <td className="py-2 pr-4">
-                              {i.status === "PASS" && <Badge tone="green">PASS</Badge>}
-                              {i.status === "FAIL" && <Badge tone="red">FAIL</Badge>}
-                              {i.status === "PENDING" && <Badge tone="amber">PENDING</Badge>}
-                            </td>
-                            <td className="py-2">{new Date(i.dueDate).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                        {!filteredInspections.length && (
-                          <tr>
-                            <td className="py-4 text-neutral-500" colSpan={5}>
-                              No inspections.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardBody>
-              </Card>
+              <InspectionsTable
+                inspections={inspectionsOrdered}
+                statusFilter={statusFilter}
+                onStatusFilter={setStatusFilter}
+              />
             </section>
           )}
 
           {tab === "settings" && (
-            <section className="grid" style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }}>
+            <section
+              className="grid"
+              style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }}
+            >
               <Card>
                 <CardHeader>API</CardHeader>
                 <CardBody>
@@ -478,8 +729,9 @@ export default function App() {
                 <CardHeader>About</CardHeader>
                 <CardBody>
                   <div className="text-sm text-neutral-600">
-                    This is a polished UI using plain React + minimal CSS utilities (no extra libraries). It talks to{" "}
-                    <code>GET /assets</code>, <code>POST /assets</code>, and <code>GET /inspections</code>.
+                    Plain React + minimal utility classes. Endpoints used:{" "}
+                    <code>GET /assets</code>, <code>POST /assets</code>,{" "}
+                    <code>GET /inspections</code>.
                   </div>
                 </CardBody>
               </Card>
@@ -487,6 +739,15 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* Add Asset Modal */}
+      <Modal
+        open={showAdd}
+        title="Add Asset"
+        onClose={() => setShowAdd(false)}
+      >
+        <AddAssetForm form={form} setForm={setForm} onSubmit={addAsset} />
+      </Modal>
 
       {/* tiny utility styles so it looks clean without Tailwind build */}
       <style>{`
@@ -542,6 +803,7 @@ export default function App() {
         .gap-6 { gap: 1.5rem; }
         .min-h-screen { min-height: 100vh; }
         .w-full { width: 100%; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         .border-b .last\\:border-0:last-child { border-bottom: 0; }
       `}</style>
     </div>
