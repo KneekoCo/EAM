@@ -1,25 +1,19 @@
 {
-  "name": "@eam/db",
+  "name": "eam-monorepo",
   "private": true,
   "packageManager": "pnpm@10.14.0",
-  "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "dev:api": "pnpm --filter ./apps/api run start:dev",
-    "dev:web": "pnpm --filter ./apps/web run dev"
+    "dev:ui": "pnpm --filter ./eam-ui run dev",
+    "build": "pnpm -r -s run build",
+    "dev": "pnpm -r -s run dev"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^9.38.0",
+    "@typescript-eslint/parser": "^8.46.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "prettier": "^3.6.2",
-    "prisma": "^6.14.0"
-  },
-  "type": "module"
+    "prettier": "^3.6.2"
+  }
 }
